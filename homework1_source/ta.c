@@ -1,9 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "Error.h"
+
+typedef struct{
+	char* cellSize;
+	char* cellCount;
+} fileHeader;
 
 typedef struct {
-	char* size;
-	char* count;
+	fileHeader* header;
 	FILE* temp1;
 } fileStructure;
 
@@ -21,24 +26,21 @@ main(int argc, char** argv){
 	}
 	
 	FILE *in, *out;
-	int i;
-
-	long *cellBuf;
 	
-
 	//파일 개방(file open) 
-	if((fileStruct->temp1 = fopen(argv[1], "w+")) == NULL){
-		fprintf(stderr, "Error : file open failed.\n");
+	if(((fileStruct->temp1) = fopen(argv[1], "w+")) == NULL){
+		fprintf(stderr, "\nError : file open failed.\n");
 		exit(1);
 	}
 	char* fileName = argv[1];
+	char* command = argv[2];
 	
-	switch(argv[2]) {
+	switch(command) {
 		//배열 파일의 생성 및 초기화
 		"-i" :{
 			//명령어 형식이 잘못 입력되었을 때  
 			if(argc != 6) {
-				fprintf(stderr, "ta : Usage: ta %s command size count initial-value\n", argv[0]);
+				fprintf(stderr, "\nta : Usage: ta %s command size count initial-value\n", fileName);
 				exit(1);
 			}
 			
@@ -46,10 +48,10 @@ main(int argc, char** argv){
 			long cellCount = atol(argv[4]);
 			long initValue = atol(argv[5]);
 			in = fileStruct->temp1;
-			fileStruct->size = (int*)malloc(2);
+			fileStruct->header->cellSize = (int*)malloc(2);
 	
 			if((initFile(in, cellSize, cellCount, initValue) < 0){
-				fprintf(stderr, "Error : file init failed.\n");
+				fprintf(stderr, "\nError : file init failed.\n");
 				exit(1);
 			}
 			
@@ -58,7 +60,7 @@ main(int argc, char** argv){
 		//배열 파일의 지정된 셀에 특정 값의 10진 표현을 저장
 		"-w" :{
 			if(argc != 5) {
-				fprintf(stderr, "ta : Usage: ta %s command size count initial-value\n", argv[0]);
+				fprintf(stderr, "\nta : Usage: ta %s command size count initial-value\n", argv[0]);
 				exit(1);
 			}
 			
@@ -66,7 +68,7 @@ main(int argc, char** argv){
 			long cellValue = argv[4];
 			
 			if((writeCell(in, cellIndex, cellValue) < 0){
-				fprintf(stderr, "ta : Error : file write failed.\n");
+				fprintf(stderr, "\nta : Error : file write failed.\n");
 				exit(1);
 			}
 			
@@ -78,7 +80,7 @@ main(int argc, char** argv){
 			long *cellBuf = 
 			
 			if((readCell(in, cellIndex, cellBuf)) < 0){
-				fprintf(stderr, "ta : Error : file write failed.\n");
+				fprintf(stderr, "\nta : Error : file write failed.\n");
 				exit(1);
 			}
 			
@@ -89,7 +91,7 @@ main(int argc, char** argv){
 			break;
 		}
 		default:{
-			fprintf(stderr, "ta : Command not found : you can use commands -i -w -r -l\n");
+			fprintf(stderr, "\nta : Command not found : you can use commands -i -w -r -l\n");
 			exit(1);
 		}
 	}
@@ -103,9 +105,15 @@ main(int argc, char** argv){
 //오류가 발생할 경우 -1을, 그렇지 않을 경우 0을 리턴
 //셀 크기 cellSize, 셀 개수 cellCount, 셀 초기 값 initValue
 int initFile(FILE *fp, int cellSize, long cellCount, long initValue) {
-	fp = (FILE*)malloc(cellSize*cellCount)
+	fileStruct* fs = (fileStruct*)malloc(sizeof(fileStruct));
+	if(fs == NULL) {
+		mallocFailError();
+	}
 	
-	
+	fs->cellSize = (char*)malloc(sizeof(char)*2);
+	fs->cellCount = (char*)malloc(sizeof(char)*6);
+	fs->cellSize = itoa(cellSize);
+	fs->cellCount = ltoa(cellCount);
 }
 
 //개방된 텍스트 파일 fp의 특정 셀(인덱스가 cellIndex인 셀)에 값 cellValue를 저장
