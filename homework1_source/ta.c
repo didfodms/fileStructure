@@ -9,13 +9,13 @@ int readAdjacentCells(FILE *fp, long ciStart, long ciEnd, long *cellBuf);
 
 int main(int argc, char** argv){
 	
-	FILE *in, *out;
+	FILE *in;
 	char* command = argv[2];
 	
 	//배열 파일의 생성 및 초기화
 	if(strcmp(command, "-i") == 0) {
 		//파일 개방(file open) 
-		if((in = fopen(argv[1], "w+")) == NULL){
+		if((in = fopen(argv[1], "w")) == NULL){
 			fprintf(stderr, "\nError : file open failed.\n");
 			exit(1);
 		}
@@ -57,6 +57,14 @@ int main(int argc, char** argv){
 		char cellSizeBuf[2];
 		char cellCountBuf[6];
 		fscanf(in, "%2s%6s", cellSizeBuf, cellCountBuf);
+		int cellSize = atoi(cellSizeBuf);
+		long cellCount = atol(cellCountBuf);
+		
+		//cellValue가 cellSize보다 크다면 오류  
+		if(_msize(argv[4]) >= cellSize){
+			fprintf(stderr, "셀의 크기는 %d까지입니다.", cellSize);
+			exit(1);
+		}
 		
 		//index 초과 에러 
 		if(atol(argv[3]) >= atol(cellCountBuf)){
@@ -112,7 +120,7 @@ int main(int argc, char** argv){
 			long cellIndex = atol(argv[3+i]);
 			
 			if((readCell(in, cellIndex, cellBuf+i)) < 0){
-				fprintf(stderr, "\nError : file write failed.\n");
+				fprintf(stderr, "\nError : file read failed.\n");
 				exit(1);
 			}
 		}
@@ -161,7 +169,7 @@ int main(int argc, char** argv){
 		}	
 		
 		if((readAdjacentCells(in, ciStart, ciEnd, cellBuf)) < 0){
-			fprintf(stderr, "\nError : file write failed.\n");
+			fprintf(stderr, "\nError : file read failed.\n");
 			exit(1);
 		}
 		
@@ -177,7 +185,6 @@ int main(int argc, char** argv){
 	}
 	
 	fclose(in);
-	fclose(out);
 }
 
 //개방된 텍스트 파일 fp를 초기화
